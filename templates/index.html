@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Viper's Morning Brews</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Viper's Morning Brews</h1>
+        <div class="input-options">
+            <label><input type="radio" name="input-type" value="url" checked> URL</label>
+            <label><input type="radio" name="input-type" value="text"> Text</label>
+        </div>
+        <form id="summarize-form">
+            <div id="url-section">
+                <input type="url" id="url-input" placeholder="Enter article URL">
+            </div>
+            <div id="text-section" class="hidden">
+                <textarea id="text-input" placeholder="Paste your article text here" rows="10"></textarea>
+            </div>
+            <button type="submit">Brew</button>
+        </form>
+        <div id="summaries">
+            <div id="loading" class="hidden">Give us a second to cook...</div>
+            <div class="summary-container">
+                <h2>Gemini</h2>
+                <p id="gemini-summary"></p>
+            </div>
+            <div class="summary-container">
+                <h2>ChatGPT</h2>
+                <p id="chatgpt-summary"></p>
+            </div>
+            <div class="summary-container">
+                <h2>Claude</h2>
+                <p id="claude-summary"></p>
+            </div>
+        </div>
+
+        <div id="follow-up-section" class="hidden">
+            <form id="follow-up-form">
+                <input type="text" id="follow-up-input" placeholder="Refine the formula. What alterations do you want in the summaries?">
+                <button type="submit">Refine</button>
+            </form>
+        </div>
+        <img src="/static/vipercoffee.jpg" alt="Viper's Morning Brews" class="footer-image">
+    </div>
+    <script src="/static/script.js"></script>
+</body>
+</html>
