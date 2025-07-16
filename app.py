@@ -10,34 +10,7 @@ from bs4 import BeautifulSoup
 # This is primarily for local development.
 load_dotenv()
 
-openai_key = os.getenv('OPENAI_API_KEY')
-google_key = os.getenv('GOOGLE_API_KEY')
-anthropic_key = os.getenv('ANTHROPIC_API_KEY')
-
-def mask_key(key):
-    if key is None:
-        return 'None (Key not found)'
-    if len(key) > 8:
-        return key[:4] + '...' + key[-4:]
-    return 'Key too short'
-
-print("\n[DEBUG] API Keys Status:")
-print(f"- OPENAI_API_KEY: {mask_key(openai_key)}")
-print(f"- GOOGLE_API_KEY: {mask_key(google_key)}")
-print(f"- ANTHROPIC_API_KEY: {mask_key(anthropic_key)}\n")
-
 app = Flask(__name__)
-
-# --- Configure API Keys ---
-
-# Configure OpenAI
-try:
-    openai.api_key = os.getenv("OPENAI_API_KEY")
-    if not openai.api_key:
-        print("Warning: OPENAI_API_KEY not found. ChatGPT summarization will be disabled.")
-except Exception as e:
-    print(f"Failed to configure OpenAI: {e}")
-    openai.api_key = None
 
 
 
@@ -64,10 +37,11 @@ def get_article_text(url):
 # --- Summarization function for Gemini ---
 def summarize_with_gemini(text, prompt="You are an AI assistant tasked with generating concise, executive-level summaries of articles related to Artificial Intelligence. Given a URL link to an article or copy/pasted text, create a paragraph-form summary that is roughly 5 to 10 sentences in length. Your summary should highlight key changes, their implications, and clearly explain why these developments matter to executive-level stakeholders. Prioritize clarity, relevance, and impact, ensuring executives quickly grasp the significance of the information."):
     import google.generativeai as genai
-    if not os.getenv("GOOGLE_API_KEY"):
+    google_key = os.getenv("GOOGLE_API_KEY")
+    if not google_key:
         return "Gemini API key not configured."
     try:
-        genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
+        genai.configure(api_key=google_key)
         model = genai.GenerativeModel('gemini-2.5-pro')
         response = model.generate_content(f"{prompt}\n\nArticle:\n\n{text}")
         return response.text
@@ -81,10 +55,12 @@ def summarize_with_gemini(text, prompt="You are an AI assistant tasked with gene
 # --- Summarization function for ChatGPT ---
 def summarize_with_chatgpt(text, prompt="You are an AI assistant tasked with generating concise, executive-level summaries of articles related to Artificial Intelligence. Given a URL link to an article or copy/pasted text, create a paragraph-form summary that is roughly 5 to 10 sentences in length. Your summary should highlight key changes, their implications, and clearly explain why these developments matter to executive-level stakeholders. Prioritize clarity, relevance, and impact, ensuring executives quickly grasp the significance of the information."):
     import openai
-    if not openai.api_key:
+    openai_key = os.getenv("OPENAI_API_KEY")
+    if not openai_key:
         return "OpenAI API key not configured or is invalid."
     try:
-        response = openai.chat.completions.create(
+        client = openai.OpenAI(api_key=openai_key)
+        response = client.chat.completions.create(
             model="gpt-4o",
             messages=[
                 {"role": "system", "content": "You are a helpful assistant. You will be given an article and an instruction. Follow the instruction based on the article provided."},
