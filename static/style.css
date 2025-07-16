@@ -26,8 +26,16 @@ input, textarea, button {
 
 h1 {
     text-align: left;
-    color: #444;
-    margin-bottom: 20px;
+    color: #ff4655;
+    margin-bottom: 10px; /* Adjusted for new description */
+}
+
+.description {
+    text-align: left;
+    color: #666;
+    margin-bottom: 25px;
+    font-size: 1rem;
+    max-width: 600px; /* Constrain width for readability */
 }
 
 /* --- Tabs --- */
@@ -56,8 +64,12 @@ h1 {
 }
 
 .tab-link.active {
-    color: #007bff;
-    border-bottom-color: #007bff;
+    color: #ff4655;
+    border-bottom-color: #ff4655;
+}
+
+.tab-link:hover {
+    color: #ff4655;
 }
 
 .tab-content {
@@ -97,21 +109,18 @@ h1 {
     margin-bottom: 5px;
 }
 
-input[type="text"] {
-    flex-grow: 1;
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    font-size: 16px;
-}
-
+input[type="url"],
+input[type="text"],
 textarea {
     width: 100%;
+    max-width: 450px; /* Set a max-width to align with the title */
     padding: 10px;
-    border: 1px solid #ddd;
+    margin-top: 5px;
+    border: 1px solid #ccc;
     border-radius: 4px;
-    font-size: 14px;
     box-sizing: border-box;
+    resize: vertical;
+    font-size: 16px; /* Match response font size */
 }
 
 textarea {
@@ -137,10 +146,19 @@ button[type="submit"]:hover {
 
 /* Summaries & Loading */
 #loading {
-    text-align: center;
+    text-align: left;
+    padding: 2rem 0;
+}
+
+#loading p {
     font-weight: bold;
-    color: #555;
-    padding: 2rem;
+    color: #ff4655;
+    margin: 0;
+}
+
+.loading-image {
+    max-width: 150px; /* Adjust size as needed */
+    margin-top: 15px;
 }
 
 .tab-content h2 {
