@@ -50,23 +50,36 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         try {
-            const response = await fetch('/summarize', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
+            // Call each model individually to prevent memory overload
+            const [geminiResponse, chatgptResponse, claudeResponse] = await Promise.all([
+                fetch('/summarize/gemini', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                }),
+                fetch('/summarize/chatgpt', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                }),
+                fetch('/summarize/claude', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                })
+            ]);
 
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.error || 'An unknown error occurred.');
-            }
+            // Process responses
+            const geminiData = geminiResponse.ok ? await geminiResponse.json() : { summary: 'Error loading Gemini summary' };
+            const chatgptData = chatgptResponse.ok ? await chatgptResponse.json() : { summary: 'Error loading ChatGPT summary' };
+            const claudeData = claudeResponse.ok ? await claudeResponse.json() : { summary: 'Error loading Claude summary' };
 
-            const data = await response.json();
-            originalArticleText = data.article_text; // Save the article text
+            // Save article text from any successful response
+            originalArticleText = geminiData.article_text || chatgptData.article_text || claudeData.article_text || '';
 
-            geminiSummary.textContent = data.gemini_summary;
-            chatgptSummary.textContent = data.chatgpt_summary;
-            claudeSummary.textContent = data.claude_summary;
+            geminiSummary.textContent = geminiData.summary;
+            chatgptSummary.textContent = chatgptData.summary;
+            claudeSummary.textContent = claudeData.summary;
 
             followUpSection.classList.remove('hidden'); // Show the follow-up form
 
@@ -101,22 +114,35 @@ document.addEventListener('DOMContentLoaded', function() {
         const payload = { text: originalArticleText, prompt: prompt };
 
         try {
-            const response = await fetch('/refine', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
+            // Call each model individually for refinement
+            const refinementPayload = { text: originalArticleText, prompt: prompt };
+            
+            const [geminiResponse, chatgptResponse, claudeResponse] = await Promise.all([
+                fetch('/summarize/gemini', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(refinementPayload)
+                }),
+                fetch('/summarize/chatgpt', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(refinementPayload)
+                }),
+                fetch('/summarize/claude', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(refinementPayload)
+                })
+            ]);
 
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.error || 'An unknown error occurred.');
-            }
+            // Process responses
+            const geminiData = geminiResponse.ok ? await geminiResponse.json() : { summary: 'Error refining Gemini summary' };
+            const chatgptData = chatgptResponse.ok ? await chatgptResponse.json() : { summary: 'Error refining ChatGPT summary' };
+            const claudeData = claudeResponse.ok ? await claudeResponse.json() : { summary: 'Error refining Claude summary' };
 
-            const data = await response.json();
-
-            geminiSummary.textContent = data.gemini_summary;
-            chatgptSummary.textContent = data.chatgpt_summary;
-            claudeSummary.textContent = data.claude_summary;
+            geminiSummary.textContent = geminiData.summary;
+            chatgptSummary.textContent = chatgptData.summary;
+            claudeSummary.textContent = claudeData.summary;
 
         } catch (error) {
             console.error('Error:', error);

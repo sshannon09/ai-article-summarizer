@@ -104,65 +104,87 @@ def summarize_with_claude(text, prompt="You are an AI assistant tasked with gene
 def index():
     return render_template('index.html')
 
-@app.route('/summarize', methods=['POST'])
-def summarize():
+# Individual model endpoints for memory efficiency
+@app.route('/summarize/gemini', methods=['POST'])
+def summarize_gemini():
     data = request.get_json()
     url = data.get('url')
     text = data.get('text')
+    prompt = data.get('prompt', '')
 
     if url:
-        try:
-            article_text = get_article_text(url)
-            if not article_text:
-                return jsonify({'error': 'Could not extract text from URL.'}), 400
-        except Exception as e:
-            return jsonify({'error': f'Failed to fetch or parse URL: {e}'}), 500
+        article_text = get_article_text(url)
+        if not article_text:
+            return jsonify({'error': 'Failed to extract article text from the URL.'}), 400
     elif text:
         article_text = text
     else:
         return jsonify({'error': 'Either URL or text must be provided.'}), 400
 
-    # Process each model sequentially with memory cleanup
-    gemini_summary = summarize_with_gemini(article_text)
+    summary = summarize_with_gemini(article_text, prompt)
     gc.collect()  # Force garbage collection
     
-    chatgpt_summary = summarize_with_chatgpt(article_text)
-    gc.collect()  # Force garbage collection
-    
-    claude_summary = summarize_with_claude(article_text)
-    gc.collect()  # Force garbage collection
-
     return jsonify({
-        'gemini_summary': gemini_summary,
-        'chatgpt_summary': chatgpt_summary,
-        'claude_summary': claude_summary,
-        'article_text': article_text  # Return the original text for follow-ups
+        'summary': summary,
+        'article_text': article_text
     })
+
+@app.route('/summarize/chatgpt', methods=['POST'])
+def summarize_chatgpt():
+    data = request.get_json()
+    url = data.get('url')
+    text = data.get('text')
+    prompt = data.get('prompt', '')
+
+    if url:
+        article_text = get_article_text(url)
+        if not article_text:
+            return jsonify({'error': 'Failed to extract article text from the URL.'}), 400
+    elif text:
+        article_text = text
+    else:
+        return jsonify({'error': 'Either URL or text must be provided.'}), 400
+
+    summary = summarize_with_chatgpt(article_text, prompt)
+    gc.collect()  # Force garbage collection
+    
+    return jsonify({
+        'summary': summary,
+        'article_text': article_text
+    })
+
+@app.route('/summarize/claude', methods=['POST'])
+def summarize_claude():
+    data = request.get_json()
+    url = data.get('url')
+    text = data.get('text')
+    prompt = data.get('prompt', '')
+
+    if url:
+        article_text = get_article_text(url)
+        if not article_text:
+            return jsonify({'error': 'Failed to extract article text from the URL.'}), 400
+    elif text:
+        article_text = text
+    else:
+        return jsonify({'error': 'Either URL or text must be provided.'}), 400
+
+    summary = summarize_with_claude(article_text, prompt)
+    gc.collect()  # Force garbage collection
+    
+    return jsonify({
+        'summary': summary,
+        'article_text': article_text
+    })
+
+# Legacy endpoint - kept for compatibility but not recommended
+@app.route('/summarize', methods=['POST'])
+def summarize():
+    return jsonify({'error': 'This endpoint has been deprecated. Use individual model endpoints instead.'}), 400
 
 @app.route('/refine', methods=['POST'])
 def refine():
-    data = request.get_json()
-    article_text = data.get('text')
-    prompt = data.get('prompt')
-
-    if not article_text or not prompt:
-        return jsonify({'error': 'Article text and a prompt are required.'}), 400
-
-    # Process each model sequentially with memory cleanup
-    gemini_summary = summarize_with_gemini(article_text, prompt)
-    gc.collect()  # Force garbage collection
-    
-    chatgpt_summary = summarize_with_chatgpt(article_text, prompt)
-    gc.collect()  # Force garbage collection
-    
-    claude_summary = summarize_with_claude(article_text, prompt)
-    gc.collect()  # Force garbage collection
-
-    return jsonify({
-        'gemini_summary': gemini_summary,
-        'chatgpt_summary': chatgpt_summary,
-        'claude_summary': claude_summary
-    })
+    return jsonify({'error': 'This endpoint has been deprecated. Use individual model endpoints instead.'}), 400
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
