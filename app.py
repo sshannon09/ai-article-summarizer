@@ -4,9 +4,7 @@ import os
 import sys
 import requests
 from bs4 import BeautifulSoup
-import google.generativeai as genai
-import openai
-import anthropic
+
 
 # Load environment variables from .env file if it exists. 
 # This is primarily for local development.
@@ -65,6 +63,7 @@ def get_article_text(url):
 
 # --- Summarization function for Gemini ---
 def summarize_with_gemini(text, prompt="You are an AI assistant tasked with generating concise, executive-level summaries of articles related to Artificial Intelligence. Given a URL link to an article or copy/pasted text, create a paragraph-form summary that is roughly 5 to 10 sentences in length. Your summary should highlight key changes, their implications, and clearly explain why these developments matter to executive-level stakeholders. Prioritize clarity, relevance, and impact, ensuring executives quickly grasp the significance of the information."):
+    import google.generativeai as genai
     if not os.getenv("GOOGLE_API_KEY"):
         return "Gemini API key not configured."
     try:
@@ -81,6 +80,7 @@ def summarize_with_gemini(text, prompt="You are an AI assistant tasked with gene
 
 # --- Summarization function for ChatGPT ---
 def summarize_with_chatgpt(text, prompt="You are an AI assistant tasked with generating concise, executive-level summaries of articles related to Artificial Intelligence. Given a URL link to an article or copy/pasted text, create a paragraph-form summary that is roughly 5 to 10 sentences in length. Your summary should highlight key changes, their implications, and clearly explain why these developments matter to executive-level stakeholders. Prioritize clarity, relevance, and impact, ensuring executives quickly grasp the significance of the information."):
+    import openai
     if not openai.api_key:
         return "OpenAI API key not configured or is invalid."
     try:
@@ -98,6 +98,7 @@ def summarize_with_chatgpt(text, prompt="You are an AI assistant tasked with gen
 
 # --- Summarization function for Claude ---
 def summarize_with_claude(text, prompt="You are an AI assistant tasked with generating concise, executive-level summaries of articles related to Artificial Intelligence. Given a URL link to an article or copy/pasted text, create a paragraph-form summary that is roughly 5 to 10 sentences in length. Your summary should highlight key changes, their implications, and clearly explain why these developments matter to executive-level stakeholders. Prioritize clarity, relevance, and impact, ensuring executives quickly grasp the significance of the information."):
+    import anthropic
     claude_api_key = os.getenv("ANTHROPIC_API_KEY")
     if not claude_api_key:
         return "Anthropic API key not configured or is invalid."
