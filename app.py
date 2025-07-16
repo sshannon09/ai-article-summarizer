@@ -8,31 +8,9 @@ import google.generativeai as genai
 import openai
 import anthropic
 
-# Get the current working directory
-current_dir = os.path.dirname(os.path.abspath(__file__))
-print(f"[DEBUG] Current working directory: {current_dir}")
-
-# Try to find and load .env file
-dotenv_path = find_dotenv()
-if dotenv_path:
-    print(f"[DEBUG] Loading .env file from: {dotenv_path}")
-    load_dotenv(dotenv_path, override=True)
-else:
-    print("[ERROR] Could not find .env file in the project directory")
-    print("[INFO] Looking for .env in:", os.path.join(current_dir, '.env'))
-    # Try to load .env from the current directory
-    dotenv_path = os.path.join(current_dir, '.env')
-    if os.path.exists(dotenv_path):
-        print(f"[DEBUG] Loading .env file from explicit path: {dotenv_path}")
-        load_dotenv(dotenv_path, override=True)
-    else:
-        print("[ERROR] .env file not found. Please make sure it exists in the project root.")
-
-# Debug: Print masked API keys and environment info
-print("\n[DEBUG] Environment Variables:")
-print(f"- Current working directory: {os.getcwd()}")
-print(f"- Python version: {sys.version}")
-print(f"- .env file: {os.path.abspath('.env') if os.path.exists('.env') else 'Not found'}")
+# Load environment variables from .env file if it exists. 
+# This is primarily for local development.
+load_dotenv()
 
 openai_key = os.getenv('OPENAI_API_KEY')
 google_key = os.getenv('GOOGLE_API_KEY')
