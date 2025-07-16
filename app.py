@@ -65,15 +65,7 @@ except Exception as e:
 
 
 
-# Configure Anthropic
-claude_client = None
-try:
-    if os.getenv("ANTHROPIC_API_KEY"):
-        claude_client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
-    else:
-        print("Warning: ANTHROPIC_API_KEY not found. Claude summarization will be disabled.")
-except Exception as e:
-    print(f"Failed to configure Anthropic: {e}")
+
 
 # --- Helper function to get article text ---
 def get_article_text(url):
@@ -125,8 +117,11 @@ def summarize_with_chatgpt(text, prompt="You are an AI assistant tasked with gen
 
 # --- Summarization function for Claude ---
 def summarize_with_claude(text, prompt="You are an AI assistant tasked with generating concise, executive-level summaries of articles related to Artificial Intelligence. Given a URL link to an article or copy/pasted text, create a paragraph-form summary that is roughly 5 to 10 sentences in length. Your summary should highlight key changes, their implications, and clearly explain why these developments matter to executive-level stakeholders. Prioritize clarity, relevance, and impact, ensuring executives quickly grasp the significance of the information."):
-    if not claude_client:
+    claude_api_key = os.getenv("ANTHROPIC_API_KEY")
+    if not claude_api_key:
         return "Anthropic API key not configured or is invalid."
+    
+    claude_client = anthropic.Anthropic(api_key=claude_api_key)
     try:
         message = claude_client.messages.create(
             model="claude-sonnet-4-20250514",
