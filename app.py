@@ -36,7 +36,7 @@ def get_article_text(url):
         return None
 
 # --- Summarization function for Gemini ---
-def summarize_with_gemini(text, prompt="You are an AI assistant tasked with generating concise, executive-level summaries of articles related to Artificial Intelligence. Given a URL link to an article or copy/pasted text, create a paragraph-form summary that is roughly 5 to 10 sentences in length. Your summary should highlight key changes, their implications, and clearly explain why these developments matter to executive-level stakeholders. Prioritize clarity, relevance, and impact, ensuring executives quickly grasp the significance of the information. We cannot have any information in Bold or with any other formatting that would cause ** to show up from an API call for the answer."):
+def summarize_with_gemini(text, prompt="You are an AI assistant tasked with generating concise, executive-level summaries of articles related to Artificial Intelligence. Given a URL link to an article or copy/pasted text, create a paragraph-form summary that is roughly 5 to 10 sentences in length. Your summary should highlight key changes, their implications, and clearly explain why these developments matter to executive-level stakeholders. Prioritize clarity, relevance, and impact, ensuring executives quickly grasp the significance of the information."):
     import google.generativeai as genai
     google_key = os.getenv("GOOGLE_API_KEY")
     if not google_key:
@@ -54,7 +54,7 @@ def summarize_with_gemini(text, prompt="You are an AI assistant tasked with gene
         return f"Error generating summary with Gemini. Check if the API key is valid. ({e})"
 
 # --- Summarization function for ChatGPT ---
-def summarize_with_chatgpt(text, prompt="You are an AI assistant tasked with generating concise, executive-level summaries of articles related to Artificial Intelligence. Given a URL link to an article or copy/pasted text, create a paragraph-form summary that is roughly 5 to 10 sentences in length. Your summary should highlight key changes, their implications, and clearly explain why these developments matter to executive-level stakeholders. Prioritize clarity, relevance, and impact, ensuring executives quickly grasp the significance of the information. We cannot have any information in Bold or with any other formatting that would cause ** to show up from an API call for the answer."):
+def summarize_with_chatgpt(text, prompt="You are an AI assistant tasked with generating concise, executive-level summaries of articles related to Artificial Intelligence. Given a URL link to an article or copy/pasted text, create a paragraph-form summary that is roughly 5 to 10 sentences in length. Your summary should highlight key changes, their implications, and clearly explain why these developments matter to executive-level stakeholders. Prioritize clarity, relevance, and impact, ensuring executives quickly grasp the significance of the information."):
     import openai
     openai_key = os.getenv("OPENAI_API_KEY")
     if not openai_key:
@@ -74,7 +74,7 @@ def summarize_with_chatgpt(text, prompt="You are an AI assistant tasked with gen
         return "Error generating summary with ChatGPT. Check if the API key is valid."
 
 # --- Summarization function for Claude ---
-def summarize_with_claude(text, prompt="You are an AI assistant tasked with generating concise, executive-level summaries of articles related to Artificial Intelligence. Given a URL link to an article or copy/pasted text, create a paragraph-form summary that is roughly 5 to 10 sentences in length. Your summary should highlight key changes, their implications, and clearly explain why these developments matter to executive-level stakeholders. Prioritize clarity, relevance, and impact, ensuring executives quickly grasp the significance of the information. We cannot have any information in Bold or with any other formatting that would cause ** to show up from an API call for the answer."):
+def summarize_with_claude(text, prompt="You are an AI assistant tasked with generating concise, executive-level summaries of articles related to Artificial Intelligence. Given a URL link to an article or copy/pasted text, create a paragraph-form summary that is roughly 5 to 10 sentences in length. Your summary should highlight key changes, their implications, and clearly explain why these developments matter to executive-level stakeholders. Prioritize clarity, relevance, and impact, ensuring executives quickly grasp the significance of the information."):
     import anthropic
     claude_api_key = os.getenv("ANTHROPIC_API_KEY")
     if not claude_api_key:
@@ -110,7 +110,7 @@ def summarize_gemini():
     data = request.get_json()
     url = data.get('url')
     text = data.get('text')
-    prompt = data.get('prompt', '')
+    prompt = data.get('prompt')
 
     if url:
         article_text = get_article_text(url)
@@ -121,7 +121,11 @@ def summarize_gemini():
     else:
         return jsonify({'error': 'Either URL or text must be provided.'}), 400
 
-    summary = summarize_with_gemini(article_text, prompt)
+    # If a custom prompt is provided, use it. Otherwise, the function's default will be used.
+    if prompt:
+        summary = summarize_with_gemini(article_text, prompt)
+    else:
+        summary = summarize_with_gemini(article_text)
     gc.collect()  # Force garbage collection
     
     return jsonify({
@@ -134,7 +138,7 @@ def summarize_chatgpt():
     data = request.get_json()
     url = data.get('url')
     text = data.get('text')
-    prompt = data.get('prompt', '')
+    prompt = data.get('prompt')
 
     if url:
         article_text = get_article_text(url)
@@ -145,7 +149,11 @@ def summarize_chatgpt():
     else:
         return jsonify({'error': 'Either URL or text must be provided.'}), 400
 
-    summary = summarize_with_chatgpt(article_text, prompt)
+    # If a custom prompt is provided, use it. Otherwise, the function's default will be used.
+    if prompt:
+        summary = summarize_with_chatgpt(article_text, prompt)
+    else:
+        summary = summarize_with_chatgpt(article_text)
     gc.collect()  # Force garbage collection
     
     return jsonify({
@@ -158,7 +166,7 @@ def summarize_claude():
     data = request.get_json()
     url = data.get('url')
     text = data.get('text')
-    prompt = data.get('prompt', '')
+    prompt = data.get('prompt')
 
     if url:
         article_text = get_article_text(url)
@@ -169,7 +177,11 @@ def summarize_claude():
     else:
         return jsonify({'error': 'Either URL or text must be provided.'}), 400
 
-    summary = summarize_with_claude(article_text, prompt)
+    # If a custom prompt is provided, use it. Otherwise, the function's default will be used.
+    if prompt:
+        summary = summarize_with_claude(article_text, prompt)
+    else:
+        summary = summarize_with_claude(article_text)
     gc.collect()  # Force garbage collection
     
     return jsonify({

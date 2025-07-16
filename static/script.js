@@ -26,27 +26,30 @@ document.addEventListener('DOMContentLoaded', function() {
         event.preventDefault();
 
         const loading = document.getElementById('loading');
+        const summariesOutput = document.getElementById('summaries-output');
         const geminiSummary = document.getElementById('gemini-summary');
         const chatgptSummary = document.getElementById('chatgpt-summary');
         const claudeSummary = document.getElementById('claude-summary');
 
         loading.classList.remove('hidden');
+        summariesOutput.classList.add('hidden'); // Ensure tabs are hidden before new summary
         followUpSection.classList.add('hidden');
-        geminiSummary.textContent = '';
-        chatgptSummary.textContent = '';
-        claudeSummary.textContent = '';
+        geminiSummary.innerHTML = '';
+        chatgptSummary.innerHTML = '';
+        claudeSummary.innerHTML = '';
 
         const selectedType = document.querySelector('input[name="input-type"]:checked').value;
+        const prompt = document.getElementById('prompt-input').value;
         let payload = {};
 
         if (selectedType === 'url') {
             const url = document.getElementById('url-input').value;
             if (!url) { alert('Please enter a URL.'); loading.classList.add('hidden'); return; }
-            payload = { url: url };
+            payload = { url: url, prompt: prompt };
         } else {
             const text = document.getElementById('text-input').value;
             if (!text) { alert('Please paste some text.'); loading.classList.add('hidden'); return; }
-            payload = { text: text };
+            payload = { text: text, prompt: prompt };
         }
 
         try {
@@ -77,18 +80,19 @@ document.addEventListener('DOMContentLoaded', function() {
             // Save article text from any successful response
             originalArticleText = geminiData.article_text || chatgptData.article_text || claudeData.article_text || '';
 
-            geminiSummary.textContent = geminiData.summary;
-            chatgptSummary.textContent = chatgptData.summary;
-            claudeSummary.textContent = claudeData.summary;
+            geminiSummary.innerHTML = formatSummary(geminiData.summary);
+            chatgptSummary.innerHTML = formatSummary(chatgptData.summary);
+            claudeSummary.innerHTML = formatSummary(claudeData.summary);
 
+            summariesOutput.classList.remove('hidden'); // Reveal the tabs
             followUpSection.classList.remove('hidden'); // Show the follow-up form
 
         } catch (error) {
             console.error('Error:', error);
             const errorMessage = `An error occurred: ${error.message}`;
-            geminiSummary.textContent = errorMessage;
-            chatgptSummary.textContent = errorMessage;
-            claudeSummary.textContent = errorMessage;
+            geminiSummary.innerHTML = errorMessage;
+            chatgptSummary.innerHTML = errorMessage;
+            claudeSummary.innerHTML = errorMessage;
         } finally {
             loading.classList.add('hidden');
         }
@@ -107,9 +111,9 @@ document.addEventListener('DOMContentLoaded', function() {
         const claudeSummary = document.getElementById('claude-summary');
 
         loading.classList.remove('hidden');
-        geminiSummary.textContent = 'Refining...';
-        chatgptSummary.textContent = 'Refining...';
-        claudeSummary.textContent = 'Refining...';
+        geminiSummary.innerHTML = 'Refining...';
+        chatgptSummary.innerHTML = 'Refining...';
+        claudeSummary.innerHTML = 'Refining...';
 
         const payload = { text: originalArticleText, prompt: prompt };
 
@@ -140,23 +144,35 @@ document.addEventListener('DOMContentLoaded', function() {
             const chatgptData = chatgptResponse.ok ? await chatgptResponse.json() : { summary: 'Error refining ChatGPT summary' };
             const claudeData = claudeResponse.ok ? await claudeResponse.json() : { summary: 'Error refining Claude summary' };
 
-            geminiSummary.textContent = geminiData.summary;
-            chatgptSummary.textContent = chatgptData.summary;
-            claudeSummary.textContent = claudeData.summary;
+            geminiSummary.innerHTML = formatSummary(geminiData.summary);
+            chatgptSummary.innerHTML = formatSummary(chatgptData.summary);
+            claudeSummary.innerHTML = formatSummary(claudeData.summary);
 
         } catch (error) {
             console.error('Error:', error);
             const errorMessage = `An error occurred: ${error.message}`;
-            geminiSummary.textContent = errorMessage;
-            chatgptSummary.textContent = errorMessage;
-            claudeSummary.textContent = errorMessage;
+            geminiSummary.innerHTML = errorMessage;
+            chatgptSummary.innerHTML = errorMessage;
+            claudeSummary.innerHTML = errorMessage;
         } finally {
             loading.classList.add('hidden');
         }
     });
+
+    // Default to showing the Gemini tab
+    document.getElementById("gemini").style.display = "block";
 });
 
-function openTab(evt, modelName) {
+function formatSummary(text) {
+    if (!text) return '';
+    // Replace **word** with <b>word</b> for bolding
+    let formattedText = text.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
+    // Replace ## with a space
+    formattedText = formattedText.replace(/##/g, ' ');
+    return formattedText;
+}
+
+function openTab(event, tabName) {
     // Get all elements with class="tab-content" and hide them
     const tabcontent = document.getElementsByClassName("tab-content");
     for (let i = 0; i < tabcontent.length; i++) {
@@ -170,6 +186,6 @@ function openTab(evt, modelName) {
     }
 
     // Show the current tab, and add an "active" class to the button that opened the tab
-    document.getElementById(modelName).style.display = "block";
-    evt.currentTarget.className += " active";
+    document.getElementById(tabName).style.display = "block";
+    event.currentTarget.className += " active";
 }
