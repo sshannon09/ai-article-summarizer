@@ -4,6 +4,7 @@ import os
 import sys
 import requests
 from bs4 import BeautifulSoup
+import gc
 
 
 # Load environment variables from .env file if it exists. 
@@ -121,9 +122,15 @@ def summarize():
     else:
         return jsonify({'error': 'Either URL or text must be provided.'}), 400
 
+    # Process each model sequentially with memory cleanup
     gemini_summary = summarize_with_gemini(article_text)
+    gc.collect()  # Force garbage collection
+    
     chatgpt_summary = summarize_with_chatgpt(article_text)
+    gc.collect()  # Force garbage collection
+    
     claude_summary = summarize_with_claude(article_text)
+    gc.collect()  # Force garbage collection
 
     return jsonify({
         'gemini_summary': gemini_summary,
@@ -141,9 +148,15 @@ def refine():
     if not article_text or not prompt:
         return jsonify({'error': 'Article text and a prompt are required.'}), 400
 
+    # Process each model sequentially with memory cleanup
     gemini_summary = summarize_with_gemini(article_text, prompt)
+    gc.collect()  # Force garbage collection
+    
     chatgpt_summary = summarize_with_chatgpt(article_text, prompt)
+    gc.collect()  # Force garbage collection
+    
     claude_summary = summarize_with_claude(article_text, prompt)
+    gc.collect()  # Force garbage collection
 
     return jsonify({
         'gemini_summary': gemini_summary,
